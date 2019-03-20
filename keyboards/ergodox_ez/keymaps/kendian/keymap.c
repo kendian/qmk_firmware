@@ -69,38 +69,38 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [BASE] = LAYOUT_ergodox(
   /*
   .--------------------------------------------------.
-  | GrEsc  |   !  |   @  |   #  |   $  |   %  |  {   |
+  | Grave  |   !  |   @  |   #  |   $  |   %  |  {   |
   |--------+------+------+------+------+------+------|
   |  Tab   |   Q  |   W  |   E  |   R  |   T  |  (   |
   |--------+------+------+------+------+------|      |
-  |   _    |   A  |   S  |   D  |   F  |   G  |------|
+  |  Esc   |   A  |   S  |   D  |   F  |   G  |------|
   |--------+------+------+------+------+------|  [   |
   | Shift  |   Z  |   X  |   C  |   V  |   B  |      |
   '--------+------+------+------+------+-------------'
-    | ~L1  | Home |  End | PgUp | PgDn |
+    | ~L1  |      | Ctrl |  Opt | Cmd  |
     '----------------------------------'
                                        .-------------.
-                                       | Ctrl |  Del |
+                                       |  Del |  Ins |
                                 .------+------+------|
-                                |      |      |  Alt |
+                                |      |      |      |
                                 | Space|BSpace|------|
-                                |      |      |  Cmd |
+                                |      |      |      |
                                 '--------------------'
   */
 
-  KC_GESC, KC_EXLM, KC_AT,   KC_HASH,   KC_DLR, KC_PERC, KC_LCBR,
+  KC_GRV,  KC_EXLM, KC_AT,   KC_HASH,   KC_DLR, KC_PERC, KC_LCBR,
   KC_TAB,  KC_Q,    KC_W,    KC_E,      KC_R,   KC_T,    KC_LPRN,
-  KC_UNDS, KC_A,    KC_S,    KC_D,      KC_F,   KC_G,
+  KC_ESC,  KC_A,    KC_S,    KC_D,      KC_F,   KC_G,
   OSM(MOD_LSFT), KC_Z, KC_X, KC_C,      KC_V,   KC_B,    KC_LBRC,
-  OSL(NUMS), KC_HOME, KC_END,  KC_PGUP,   KC_PGDN,
+  OSL(NUMS), XXXXXXX, OSM(MOD_LCTL), OSM(MOD_LALT), OSM(MOD_LGUI),
 
-  OSM(MOD_LCTL), KC_DEL,
-  OSM(MOD_LALT),
-  KC_SPC, KC_BSPC, OSM(MOD_LGUI),
+  KC_DEL, KC_INS,
+  XXXXXXX,
+  KC_SPC, KC_BSPC, XXXXXXX,
 
   /*
   .--------------------------------------------------.
-  |  }   |   ^  |   &  |   *  |   -  |   =  |   +    |
+  |  }   |   ^  |   &  |   *  |   -  |   =  | BSpace |
   |------+------+------+------+------+------+--------|
   |  )   |   Y  |   U  |   I  |   O  |   P  |   \    |
   |      |------+------+------+------+------+--------|
@@ -111,22 +111,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 | Left | Down |  Up  |Right |  ~L2 |
                 '----------------------------------'
   .-------------.
-  |  Ins |      |
+  | Home | End  |
   |------+------+------.
-  |      |      |      |
+  | PgUp |      |      |
   |------|BSpace|Enter |
-  |      |      |      |
+  | PgDn |      |      |
   '--------------------'
   */
 
-  KC_RCBR, KC_CIRC, KC_AMPR, KC_ASTR, KC_MINS, KC_EQL,    KC_PLUS,
+  KC_RCBR, KC_CIRC, KC_AMPR, KC_ASTR, KC_MINS, KC_EQL,    KC_BSPC,
   KC_RPRN, KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,      KC_BSLS,
            KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN,   KC_QUOT,
   KC_RBRC, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,   OSM(MOD_RSFT),
                     KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,   OSL(FN),
-  KC_INS, XXXXXXX,
-  XXXXXXX,
-  XXXXXXX, KC_BSPC, KC_ENT
+  KC_HOME, KC_END,
+  KC_PGUP,
+  KC_PGDN, KC_BSPC, KC_ENT
 ),
 
 /* numbers and user defined strings */
