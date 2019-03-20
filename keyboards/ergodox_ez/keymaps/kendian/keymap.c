@@ -5,22 +5,33 @@
 #include "ergodox_ez.h"
 #include "version.h"
 
-/*
-Adapted from
-https://github.com/qmk/qmk_firmware/tree/master/layouts/community/ergodox/qwerty_code_friendly
 
-Base layer (0) is close to typical QWERTY
+#define MODS_SHIFT_MASK  (MOD_BIT(KC_LSHIFT)|MOD_BIT(KC_RSHIFT)|MOD_BIT(MOD_LSFT))
+#define MODS_CTRL_MASK  (MOD_BIT(KC_LCTL)|MOD_BIT(KC_RCTRL))
+#define MODS_ALT_MASK  (MOD_BIT(KC_LALT)|MOD_BIT(KC_RALT))
+#define MODS_GUI_MASK  (MOD_BIT(KC_LGUI)|MOD_BIT(KC_RGUI))
 
-Only symbols are used on the top row (not numbers); the symbol layer's (1) number-pad layout can be used for numbers. Symbols match regular QWERTY. except for '()' which are grouped with other brackets. In their place -/= keys are placed, which almost matches a regular layout.
+/* layers */
+enum {
+  BASE = 0,
+  NUMS,
+  FN,
+};
 
-Brackets are placed symmetrically along the center edges, if using keys from both sides is inconvenient - the symbol layer (1) has macros at the same left key locations to type matching pairs.
 
-The space-bar on the lower-left looks like it's in an obscure location, however using the larger thumb cluster ended up being more of a reach while typing.
+enum custom_keycodes {
+  PLACEHOLDER = SAFE_RANGE, /* can always be here */
 
-Arrow keys follow VIM convention.
-*/
+  FOO,
 
-/* custom strings for each character (layer 3) */
+  STR_A, STR_B, STR_C, STR_D, STR_E, STR_F,
+  STR_G, STR_H, STR_I, STR_J, STR_K, STR_L,
+  STR_M, STR_N, STR_O, STR_P, STR_Q, STR_R,
+  STR_S, STR_T, STR_U, STR_V, STR_W, STR_X,
+  STR_Y, STR_Z,
+};
+
+/* custom strings */
 static char *custom_strings[26] = {
     /* a */    "",
     /* b */    "baldwin@bigml.com",
@@ -50,33 +61,23 @@ static char *custom_strings[26] = {
     /* z */    "",
 };
 
-enum custom_keycodes {
-  PLACEHOLDER = SAFE_RANGE, /* can always be here */
-
-  IN_CBR, IN_PRN, IN_BRC,
-  STR_A, STR_B, STR_C, STR_D, STR_E, STR_F,
-  STR_G, STR_H, STR_I, STR_J, STR_K, STR_L,
-  STR_M, STR_N, STR_O, STR_P, STR_Q, STR_R,
-  STR_S, STR_T, STR_U, STR_V, STR_W, STR_X,
-  STR_Y, STR_Z,
-};
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* default layer */
-[0] = LAYOUT_ergodox(
+[BASE] = LAYOUT_ergodox(
   /*
   .--------------------------------------------------.
-  | Grave  |   1  |   2  |   3  |   4  |   5  |  -   |
+  | GrEsc  |   !  |   @  |   #  |   $  |   %  |  {   |
   |--------+------+------+------+------+------+------|
   |  Tab   |   Q  |   W  |   E  |   R  |   T  |  (   |
   |--------+------+------+------+------+------|      |
-  |  Esc   |   A  |   S  |   D  |   F  |   G  |------|
+  |   _    |   A  |   S  |   D  |   F  |   G  |------|
   |--------+------+------+------+------+------|  [   |
   | Shift  |   Z  |   X  |   C  |   V  |   B  |      |
   '--------+------+------+------+------+-------------'
-    |      | Home |  End | PgUp | PgDn |
+    | ~L1  | Home |  End | PgUp | PgDn |
     '----------------------------------'
                                        .-------------.
                                        | Ctrl |  Del |
@@ -87,13 +88,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 '--------------------'
   */
 
-  /* KC_NLCK */
-
-  KC_GRV,  KC_1,    KC_2,    KC_3,      KC_4,   KC_5,    KC_MINS,
+  KC_GESC, KC_EXLM, KC_AT,   KC_HASH,   KC_DLR, KC_PERC, KC_LCBR,
   KC_TAB,  KC_Q,    KC_W,    KC_E,      KC_R,   KC_T,    KC_LPRN,
-  KC_ESC,  KC_A,    KC_S,    KC_D,      KC_F,   KC_G,
+  KC_UNDS, KC_A,    KC_S,    KC_D,      KC_F,   KC_G,
   OSM(MOD_LSFT), KC_Z, KC_X, KC_C,      KC_V,   KC_B,    KC_LBRC,
-  XXXXXXX, KC_HOME, KC_END,  KC_PGUP,   KC_PGDN,
+  OSL(NUMS), KC_HOME, KC_END,  KC_PGUP,   KC_PGDN,
 
   OSM(MOD_LCTL), KC_DEL,
   OSM(MOD_LALT),
@@ -101,7 +100,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   /*
   .--------------------------------------------------.
-  |  =   |   6  |   7  |   8  |   9  |   0  | BSpace |
+  |  }   |   ^  |   &  |   *  |   -  |   =  |   +    |
   |------+------+------+------+------+------+--------|
   |  )   |   Y  |   U  |   I  |   O  |   P  |   \    |
   |      |------+------+------+------+------+--------|
@@ -109,157 +108,33 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   |  ]   |------+------+------+------+------+--------|
   |      |   N  |   M  |   ,  |   .  |   /  | Shift  |
   '-------------+------+------+------+------+--------'
-                | Left | Down |  Up  |Right |      |
+                | Left | Down |  Up  |Right |  ~L2 |
                 '----------------------------------'
   .-------------.
-  |  Ins | ~L3  |
+  |  Ins |      |
   |------+------+------.
-  | ~L2  |      |      |
+  |      |      |      |
   |------|BSpace|Enter |
-  | ~L1  |      |      |
+  |      |      |      |
   '--------------------'
   */
 
-  KC_EQL,  KC_6,    KC_7,    KC_8,    KC_9,    KC_0,      KC_BSPC,
+  KC_RCBR, KC_CIRC, KC_AMPR, KC_ASTR, KC_MINS, KC_EQL,    KC_PLUS,
   KC_RPRN, KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,      KC_BSLS,
            KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN,   KC_QUOT,
   KC_RBRC, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,   OSM(MOD_RSFT),
-                    KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,   XXXXXXX,
-  KC_INS, TT(3),
-  TT(2),
-  TT(1), KC_BSPC, KC_ENT
+                    KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,   OSL(FN),
+  KC_INS, XXXXXXX,
+  XXXXXXX,
+  XXXXXXX, KC_BSPC, KC_ENT
 ),
 
-/* function keys, keypad, and brace sequences */
-[1] = LAYOUT_ergodox(
+/* numbers and user defined strings */
+[NUMS] = LAYOUT_ergodox(
 
   /*
   .--------------------------------------------------.
-  |        |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |
-  |--------+------+------+------+------+------+------|
-  |        |      |      |      |  {}  |      |      |
-  |--------+------+------+------+------+------|      |
-  |        |      |      |      |  ()  |      |------|
-  |--------+------+------+------+------+------|      |
-  |        |      |      |      |  []  |      |      |
-  '--------+------+------+------+------+-------------'
-    |      |      |      |      |      |
-    '----------------------------------'
-                                       .-------------.
-                                       |      |      |
-                                .------+------+------|
-                                |      |      |      |
-                                |      |      |------|
-                                |      |      |      |
-                                '--------------------'
-  */
-  _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,  KC_F5,   KC_F6,
-  _______, _______, _______, _______, IN_CBR, _______, _______,
-  _______, _______, _______, _______, IN_PRN, _______,
-  _______, _______, _______, _______, IN_BRC, _______, _______,
-  _______, _______, _______, _______, _______,
-  _______, _______,
-  _______,
-  _______, _______, _______,
-
-  /*
-  .--------------------------------------------------.
-  |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |        |
-  |------+------+------+------+------+------+--------|
-  |      |      |   7  |   8  |   9  |   +  |        |
-  |      |------+------+------+------+------+--------|
-  |------|      |   4  |   5  |   6  |   -  |        |
-  |      |------+------+------+------+------+--------|
-  |      |      |   1  |   2  |   3  |   *  |        |
-  '-------------+------+------+------+------+--------'
-                |   0  |   .  |   =  |   /  |      |
-                '----------------------------------'
-  .-------------.
-  |      |      |
-  |------+------+------.
-  |      |      |      |
-  |------|      |      |
-  |      |      |      |
-  '--------------------'
-
-  */
-  KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12, _______,
-  _______, _______, KC_P7,   KC_P8,   KC_P9,   KC_PPLS, _______,
-           _______, KC_P4,   KC_P5,   KC_P6,   KC_PPLS, _______,
-  _______, _______, KC_P1,   KC_P2,   KC_P3,   KC_PENT, _______,
-                    KC_P0,   KC_P0,   KC_PDOT, KC_PENT, _______,
-  _______, _______,
-  _______,
-  _______, _______, _______
-),
-
-/* mouse and media keys */
-[2] = LAYOUT_ergodox(
-  /*
-  .--------------------------------------------------.
-  |        |      |      |      |      |      |      |
-  |--------+------+------+------+------+------+------|
-  |        |      |      |      |      |      |      |
-  |--------+------+------+------+------+------|      |
-  |        |      |      |      |      |      |------|
-  |--------+------+------+------+------+------|      |
-  |        |      |      |      |      |      |      |
-  '--------+------+------+------+------+-------------'
-    |      |      |      |      |      |
-    '----------------------------------'
-                                       .-------------.
-                                       |      |      |
-                                .------+------+------|
-                                |      |      |      |
-                                |      |      |------|
-                                |      |      |      |
-                                '--------------------'
-  */
-  _______, _______, _______, _______, _______, _______, _______,
-  _______, _______, _______, _______, _______, _______, _______,
-  _______, _______, _______, _______, _______, _______,
-  _______, _______, _______, _______, _______, _______, _______,
-  _______, _______, _______, _______, _______,
-  _______, _______,
-  _______,
-  _______, _______, _______,
-
-  /*
-  .--------------------------------------------------.
-  | Mute | Play |      |      |      |      | Sleep  |
-  |------+------+------+------+------+------+--------|
-  |VolUp | Prev |MWhlUp| MsUp |MWhlDn|      | Wake   |
-  |      |------+------+------+------+------+--------|
-  |------| Next |MsLeft|MsDown|MsRght|      | BriUp  |
-  |VolDn |------+------+------+------+------+--------|
-  |      | Eject| Rclk | Mclk | Lclk |      | BriDn  |
-  '-------------+------+------+------+------+--------'
-                |      |      |      |      |      |
-                '----------------------------------'
-  .-------------.
-  |      |      |
-  |------+------+------.
-  |      |      |      |
-  |------|      |      |
-  |      |      |      |
-  '--------------------'
-  */
-  KC_MUTE, KC_MPLY, _______, _______, _______, _______, KC_SLEP,
-  KC_VOLU, KC_MRWD, KC_WH_U, KC_MS_U, KC_WH_D, _______, KC_WAKE ,
-           KC_MFFD, KC_MS_L, KC_MS_D, KC_MS_R, _______, KC_BRIU,
-  KC_VOLD, KC_EJCT, KC_BTN2, KC_BTN3, KC_BTN1, _______, KC_BRID,
-                    _______, _______, _______, _______, _______,
-  _______, _______,
-  _______,
-  _______, _______, _______
-),
-
-/* user defined strings */
-[3] = LAYOUT_ergodox(
-
-  /*
-  .--------------------------------------------------.
-  |        |      |      |      |      |      |      |
+  |        |   1  |   2  |   3  |   4  |   5  |      |
   |--------+------+------+------+------+------+------|
   |        |   Q  |   W  |   E  |   R  |   T  |      |
   |--------+------+------+------+------+------|      |
@@ -277,8 +152,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 |      |      |      |
                                 '--------------------'
   */
-
-  _______, _______, _______, _______, _______, _______, _______,
+  _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    _______,
   _______, STR_Q,   STR_W,   STR_E,   STR_R,   STR_T,   _______,
   _______, STR_A,   STR_S,   STR_D,   STR_F,   STR_G,
   _______, STR_Z,   STR_X,   STR_C,   STR_V,   STR_B,   _______,
@@ -289,7 +163,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   /*
   .--------------------------------------------------.
-  |      |      |      |      |      |      |        |
+  |      |   6  |   7  |   8  |   9  |   0  |        |
   |------+------+------+------+------+------+--------|
   |      |   Y  |   U  |   I  |   O  |   P  |        |
   |      |------+------+------+------+------+--------|
@@ -306,10 +180,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   |------|      |      |
   |      |      |      |
   '--------------------'
-  */
 
-  _______, _______, _______, _______, _______, _______, _______,
-  _______, STR_Y,   STR_U,   STR_I,   STR_O,   STR_P,   _______,
+  */
+  _______, KC_6,    KC_7,    KC_8,    KC_9,    KC_0,     _______,
+  _______, STR_Y,   STR_U,   STR_I,   STR_O,   STR_P,   KC_F12,
            STR_H,   STR_J,   STR_K,   STR_L,   _______, _______,
   _______, STR_N,   STR_M,   _______, _______, _______, _______,
   _______, _______, _______, _______, _______,
@@ -317,7 +191,73 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   _______,
   _______, _______, _______
 ),
+
+/* function keys, user defined strings */
+[FN] = LAYOUT_ergodox(
+
+  /*
+  .--------------------------------------------------.
+  |        |  F1  |  F2  |  F3  |  F4  |  F5  |      |
+  |--------+------+------+------+------+------+------|
+  |        |      |MWhlUp| MsUp |MWhlDn|      |      |
+  |--------+------+------+------+------+------|      |
+  |        |      |MsLeft|MsDown|MsRght|      |------|
+  |--------+------+------+------+------+------|      |
+  |        |      | Rclk | Mclk | Lclk |      |      |
+  '--------+------+------+------+------+-------------'
+    |      |      |      |      |      |
+    '----------------------------------'
+                                       .-------------.
+                                       |      |      |
+                                .------+------+------|
+                                |      |      |      |
+                                |      |      |------|
+                                |      |      |      |
+                                '--------------------'
+  */
+  _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   _______,
+  _______, _______, KC_WH_U, KC_MS_U, KC_WH_D, _______, _______ ,
+  _______, _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,
+  _______, _______, KC_BTN2, KC_BTN3, KC_BTN1, _______, _______,
+  _______, _______, _______, _______, _______,
+  _______, _______,
+  _______,
+  _______, _______, _______,
+
+  /*
+  .--------------------------------------------------.
+  |      |  F6  |  F7  |  F8  |  F9  |  F10 |  F11   |
+  |------+------+------+------+------+------+--------|
+  |      |      | Mute | Prev | Eject|      |  F12   |
+  |      |------+------+------+------+------+--------|
+  |------|      |VolUp | Play |      |      | BriUp  |
+  |      |------+------+------+------+------+--------|
+  |      |      |VolDn | Next |      |      | BriDn  |
+  '-------------+------+------+------+------+--------'
+                |      |      |      |      |      |
+                '----------------------------------'
+  .-------------.
+  |      |      |
+  |------+------+------.
+  |      |      |      |
+  |------|      |      |
+  |      |      |      |
+  '--------------------'
+
+  */
+
+  _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
+  _______, _______, KC_MUTE, KC_MPLY, KC_EJCT, _______, KC_F12,
+           _______, KC_VOLU, KC_MRWD, _______, _______, KC_BRIU,
+  _______, _______, KC_VOLD, KC_MFFD, _______, _______, KC_BRID,
+  _______, _______, _______, _______, _______,
+  _______, _______,
+  _______,
+  _______, _______, _______
+),
+
 };
+
 
 #define WITHOUT_MODS(...) \
   do { \
@@ -330,21 +270,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   switch (keycode) {;
-    case IN_CBR:  /* {} */
+    case FOO:
       if (record->event.pressed) {
-        SEND_STRING("{}" SS_TAP(X_LEFT));
-        return false;
-      }
-      break;
-    case IN_PRN:  /* () */
-      if (record->event.pressed) {
-        SEND_STRING("()" SS_TAP(X_LEFT));
-        return false;
-      }
-      break;
-    case IN_BRC:  /* [] */
-      if (record->event.pressed) {
-        SEND_STRING("[]" SS_TAP(X_LEFT));
+        uint8_t _real_mods = get_mods();
+        if ( _real_mods & MODS_SHIFT_MASK) {
+          clear_mods();
+          register_code(KC_1);
+          unregister_code(KC_1);
+          set_mods(_real_mods);
+        } else {
+          clear_mods();
+          register_code(KC_2);
+          unregister_code(KC_2);
+          set_mods(_real_mods);
+        }
         return false;
       }
       break;
@@ -353,9 +292,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       const char *s = custom_strings[keycode - STR_A];
       if (record->event.pressed) {
         if (*s) {
-          WITHOUT_MODS({
-              send_string(s);
-            });
+          send_string(s);
         }
         return false;
       }
